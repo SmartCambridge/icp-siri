@@ -1,0 +1,134 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;
+                                             charset=utf-8">
+
+    <link rel="stylesheet" href="leaflet/leaflet.css" />
+    <script src="leaflet/leaflet.js"></script>
+
+    <script type="text/javascript" src="Leaflet.MovingMarker/MovingMarker.js"></script>
+
+    <script type="text/javascript" src="leaflet-color-markers/js/leaflet-color-markers.js"></script>
+
+    <script type="text/javascript" src="journies.js"></script>
+
+    <script type="text/javascript">
+
+function init(){
+
+  var map = new L.Map('map');
+
+  var uoc = new
+    //L.TileLayer('http://map.cam.ac.uk/tiles/{z}/{x}/{y}.png',
+    L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {
+      attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a></a>',
+      maxZoom: 19
+    }
+  );
+
+  var cambridge = new L.LatLng(52.20038, 0.1197);
+  map.setView(cambridge, 11).addLayer(uoc);
+
+  var lines = []
+  var circles = []
+  var start = null
+  var stop = null
+
+  console.log('About to draaw lines');
+
+  var journey_number = 0;
+  journies.forEach(function(journey) {
+
+    console.log("Doing journey ", journey_number);
+
+    var line = L.polyline(journey.points, {color: 'red'}).addTo(map);
+    var j = journey_number;
+    line.bindTooltip(journey.name);
+
+    line.on('click',function(ev) {
+      // reset all lines to red
+      lines.forEach(function(other_line) {
+        other_line.setStyle({color: 'red'})
+      });
+      /// delete all existing data point markers
+      circles.forEach(function(other_circle) {
+        other_circle.remove();
+      });
+      circles = [];
+      // delete the start/end markers
+      console.log(start)
+      if (start) {
+        start.remove()
+      }
+      if (stop) {
+        stop.remove()
+      }
+      // set this line blue and put on the front
+      line.setStyle({color: 'blue'})
+      line.bringToFront();
+      // mark all the data points on this line
+      c = 0;
+      console.log("Doing points for journey ", j)
+      journies[j].points.forEach(function(point) {
+        var circle = L.circleMarker(point, {radius: 2, fillOpacity: 1, color: 'green'}).addTo(map);
+        circle.bindTooltip(journies[j].points_desc[c])
+        circles.push(circle);
+        c += 1;
+      });
+      start = L.marker(journies[j].points[0], {icon: greenIcon}).addTo(map).bindTooltip("Start");
+      stop = L.marker(journies[j].points[journies[j].points.length-1],{icon: redIcon}).addTo(map).bindTooltip("End");
+      document.getElementById('journey').innerHTML = journey.name;
+    });
+
+    lines.push(line);
+    journey_number += 1;
+
+  });
+
+  //journey.forEach(function(point)
+  //  {L.circleMarker(point,
+   //   {radius: 1, fillOpacity: 1, color: 'blue'}).addTo(map)})
+
+  function display_journey(number) {
+
+    var journey = journies[number];
+    var route = L.polyline(journey, {color: 'red'}).addTo(map);
+    //map.fitBounds(route.getBounds());
+    journey.forEach(function(point) {L.circleMarker(point, {radius: 1, fillOpacity: 1, color: 'blue'}).addTo(map)})
+
+    var myMovingMarker = L.Marker.movingMarker(journey,300).addTo(map);
+    myMovingMarker.start();
+
+    myMovingMarker.on('end', function() {
+      number;
+      journies.length;
+      if (number < journies.length) {
+        display_journey(number+1)
+      }
+    })
+
+  }
+
+  //display_journey(0)
+
+
+}
+
+    </script>
+    <title>Leaflet Basic OSM Example</title>
+  </head>
+
+  <body onload="init()">
+
+    <p id="journey">Select a journey</p>
+
+    <div id="map" style="height: 1200px; border: 1px solid black;"></div>
+
+  </body>
+
+</html>
+
+

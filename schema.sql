@@ -1,0 +1,27 @@
+
+CREATE TABLE activity (
+    SerialNo                 int,
+    RecievedTimestamp        text,
+    RecordedAtTime           text,
+    ValidUntilTime           text,
+    VehicleMonitoringRef     text,
+    LineRef                  text,
+    DirectionRef             text,
+    DataFrameRef             text,
+    DatedVehicleJourneyRef   text,
+    PublishedLineName        text,
+    OperatorRef              text,
+    VehicleFeatureRef        text,
+    OriginRef                text,
+    OriginName               text,
+    DestinationRef           text,
+    DestinationName          text,
+    OriginAimedDepartureTime text,
+    Monitored                text,
+    InPanic                  text,
+    Longitude                real,
+    Latitude                 real,
+    Bearing                  int,
+    Delay                    text,
+    VehicleRef               text
+    );
