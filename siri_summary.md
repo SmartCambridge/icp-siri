@@ -141,12 +141,13 @@ Always '0'
 Longitude
 ---------
 
--0.755235 to 0.63038
+-0.755235 to 0.63038 (Milton Kenes/Kettering/Oakam to somewhere between 
+Newmarket and Bury St Edmunds)
 
 Latitude
 --------
 
-52.0085564 to 52.8346291
+52.0085564 to 52.8346291 (Milton Kenes/Safron Walden to Spalding)
 
 Bearing
 -------
