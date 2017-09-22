@@ -35,7 +35,9 @@ function init(){
   var lines = []
   var circles = []
   var start = null
-  var stop = null
+  var end = null
+  var first = null
+  var last = null
 
   console.log('About to draaw lines');
 
@@ -59,13 +61,12 @@ function init(){
       });
       circles = [];
       // delete the start/end markers
-      console.log(start)
-      if (start) {
-        start.remove()
-      }
-      if (stop) {
-        stop.remove()
-      }
+      [start, end, first, last].forEach(function(marker){
+        console.log("removing", marker)
+        if (marker) {
+          marker.remove()
+        }
+      })
       // set this line blue and put on the front
       line.setStyle({color: 'blue'})
       line.bringToFront();
@@ -78,8 +79,10 @@ function init(){
         circles.push(circle);
         c += 1;
       });
-      start = L.marker(journies[j].points[0], {icon: greenIcon}).addTo(map).bindTooltip("Start");
-      stop = L.marker(journies[j].points[journies[j].points.length-1],{icon: redIcon}).addTo(map).bindTooltip("End");
+      first = L.circleMarker(journies[j].points[0], {radius: 6, fillOpacity: 1, color: 'green', fillColor: 'white'}).addTo(map).bindTooltip("First");
+      last  = L.circleMarker(journies[j].points[journies[j].points.length-1],{radius: 6, fillOpacity: 1, color: 'green', fillColor: 'white'}).addTo(map).bindTooltip("Last");
+      start = L.marker(journies[j].start,{icon: redIcon}).addTo(map).bindTooltip("Start <br>" + journies[j].start_label)
+      end   = L.marker(journies[j].end,{icon: greenIcon}).addTo(map).bindTooltip("End <br>" + journies[j].end_label)
       document.getElementById('journey').innerHTML = journey.name;
     });
 
