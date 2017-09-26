@@ -1,6 +1,8 @@
 #!/bin/bash
 
-input='examples/2017-04-26/ examples/2017-08-30/ examples/2017-09-04/'
+#input='examples/2017-04-26/ examples/2017-08-30/ examples/2017-09-04/'
+input='examples/2017-04-26/'
+#input='one_file/'
 database='activity.sqlite'
 
 tmp=$(mktemp .data-XXXXXX)
@@ -11,14 +13,14 @@ sqlite3 "${database}" <<EOF
 DROP TABLE IF EXISTS activity;
 CREATE TABLE activity (
     SerialNo                 int,
-    RecievedTimestamp        text,
-    RecordedAtTime           text,
-    ValidUntilTime           text,
+    RecievedTimestamp        timestamptz,
+    RecordedAtTime           timestamptz,
+    ValidUntilTime           timestamptz,
     VehicleMonitoringRef     text,
     LineRef                  text,
     DirectionRef             text,
-    DataFrameRef             text,
-    DatedVehicleJourneyRef   text,
+    DataFrameRef             int,
+    DatedVehicleJourneyRef   int,
     PublishedLineName        text,
     OperatorRef              text,
     VehicleFeatureRef        text,
@@ -26,7 +28,7 @@ CREATE TABLE activity (
     OriginName               text,
     DestinationRef           text,
     DestinationName          text,
-    OriginAimedDepartureTime text,
+    OriginAimedDepartureTime timestamptz,
     Monitored                text,
     InPanic                  text,
     Longitude                real,
