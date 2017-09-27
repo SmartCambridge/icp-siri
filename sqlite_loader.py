@@ -60,7 +60,7 @@ for directory in sys.argv[1:]:
     # Reciept timestamp, from filename
     basename = os.path.basename(filename)
     timestamp = basename[:10]
-    our_timestamp = arrow.get(timestamp).to_local().format()
+    our_timestamp = arrow.get(timestamp).to('local').format()
 
     tree = ET.parse(filename)
     root = tree.getroot()
