@@ -151,20 +151,47 @@ See VehicleMonitoringRef
 Extracting trips
 ----------------
 
-The raw data gives bus positions. Sorting by some combination
-of Origin, Departure, Origin Departure Time, Direction, Operator, Line
-and Vehicle Ref Might be expected to result in individual timetabled
-'trips'. In practice it seems necessary to sort by *all* of these to
-produce anything useful.
+The raw data gives bus positions. Partitioning the data by some
+combination of vehiclemonitoringref, lineref, directionref,
+datedvehiclejourneyref, operatorref, originref, destinationref,
+originaimeddeparturetime, and date might be expected to result in the
+paths corresponding to individual timetabled 'trips'.
 
-The resulting paths are by and large consistent with expected timetable
-trips,  with the following occasional mis-feastures:
+An exhaustive search across actual data on three weekdays 2017-04-26,
+2017-08-30 and 2017-09-04 suggests that partitioning by anything other
+than
+
+    vehiclemonitoringref, datedvehiclejourneyref, originaimeddeparturetime
+    vehiclemonitoringref, originref, originaimeddeparturetime
+    vehiclemonitoringref, destinationref, originaimeddeparturetime
+    vehiclemonitoringref, lineref, datedvehiclejourneyref, originref, date(originaimeddeparturetime)
+    vehiclemonitoringref, lineref, datedvehiclejourneyref, destinationref, date(originaimeddeparturetime)
+
+selects unrelated trips.
+
+Leaving out vehiclemonitoringref, and selecting on (originref,
+destinationref, originaimeddeparturetime) produces a moderate number of
+duplicates which all look to be errors. Two particular versions:
+
+* Different vehicles travelling clearly separate routes but both
+claiming to be on the same one (e.g. two buses claiming to be running
+the same Cambridge Science Park --> Addenbrooke's Hospital Bus Station
+journey while one of them was in Peterborough).
+
+* Different vehicles each apparently travelling on seperate parts of the
+route making up the trip (e.g. a Bedford to Luton trip where one
+vehicle appears to run into Bedford bus station, a different one runs
+from Bedford to Wilstead, and a third from Wilstaed to Silsoe where
+the trip gets lost).
+
+Once extracted, the resulting paths are by and large consistent with
+expected timetable trips,  with the following occasional mis-feastures:
 
 * Position dropouts during trips. These may be more
 common in some places than others, perhaps reflecting poor GPS and/or
 mobile coverage.  They may also be more common
 on fast route sections  (busway, A14, A428, A1307), though even random
-dropouts will be more obvious at speed.
+dropouts will also be more obvious at speed.
 
 * [Often related to dropouts] Very-occasional widely off-route points
 (e.g. a point north of Ely for a bus clearly going from Fulbourn to

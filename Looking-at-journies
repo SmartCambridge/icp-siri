@@ -1,0 +1,18 @@
+Looking at journies
+===================
+
+Start with
+
+create table journies as (select distinct vehiclemonitoringref, lineref, directionref, dataframeref, datedvehiclejourneyref, operatorref, originref, destinationref, originaimeddeparturetime from activity);
+
+Show that 
+
+select distinct dataframeref from journies;
+
+only returns 1 so dataframeref is irrelavent.
+
+select count(*), datedvehiclejourneyref from journies group by datedvehiclejourneyref order by datedvehiclejourneyref asc;
+
+confirms that lower datedvehiclejourneyref appear more frequently (2 most frequently at 69 times)
+
+For 2017-04-26, the combination (datedvehiclejourneyref, vehiclemonitoringref, lineref) appears unique. 
