@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#input='examples/2017-04-26/ examples/2017-08-30/ examples/2017-09-04/'
-input='examples/2017-04-26/'
+input='examples/2017-04-26/ examples/2017-08-30/ examples/2017-09-04/'
+#input='examples/2017-04-26/'
 #input='one_file/'
 database='activity.sqlite'
 
