@@ -3,16 +3,90 @@ Looking at journies
 
 Start with
 
-create table journies as (select distinct vehiclemonitoringref, lineref, directionref, dataframeref, datedvehiclejourneyref, operatorref, originref, destinationref, originaimeddeparturetime from activity);
+  create table journies as (select distinct vehiclemonitoringref, lineref, directionref, dataframeref, datedvehiclejourneyref, operatorref, originref, destinationref, originaimeddeparturetime from activity);
 
 Show that 
 
-select distinct dataframeref from journies;
+  select distinct dataframeref from journies;
 
 only returns 1 so dataframeref is irrelavent.
 
-select count(*), datedvehiclejourneyref from journies group by datedvehiclejourneyref order by datedvehiclejourneyref asc;
+  select count(*), datedvehiclejourneyref from journies group by datedvehiclejourneyref order by datedvehiclejourneyref asc;
 
 confirms that lower datedvehiclejourneyref appear more frequently (2 most frequently at 69 times)
 
-For 2017-04-26, the combination (datedvehiclejourneyref, vehiclemonitoringref, lineref) appears unique. 
+For 2017-04-26, the combination (datedvehiclejourneyref, vehiclemonitoringref, lineref) appears unique. But you need to filter by date(originaimeddeparturetime) to be sure you are only looking at 2017-04-26 becasue some late 2017-04-25 sneak into the file:
+
+  select count(*), datedvehiclejourneyref, vehiclemonitoringref, lineref from journies where date(originaimeddeparturetime) = '2017-04-26' group by datedvehiclejourneyref, vehiclemonitoringref, lineref having count(*) > 1 order by count(*) desc;
+
+...but not for 2017-09-04:
+
+    # select * from journies where datedvehiclejourneyref = '77' and vehiclemonitoringref = 'SCCM-54308' and lineref = 'X5' and date(originaimeddeparturetime) = '2017-09-04';
+    -[ RECORD 1 ]------------+-----------------------
+    vehiclemonitoringref     | SCCM-54308
+    lineref                  | X5
+    directionref             | OUTBOUND
+    dataframeref             | 1
+    datedvehiclejourneyref   | 77
+    operatorref              | SCCM
+    originref                | 0500CCITY476
+    destinationref           | 0500HSTNS064
+    originaimeddeparturetime | 2017-09-04 21:30:00+01
+    -[ RECORD 2 ]------------+-----------------------
+    vehiclemonitoringref     | SCCM-54308
+    lineref                  | X5
+    directionref             | OUTBOUND
+    dataframeref             | 1
+    datedvehiclejourneyref   | 77
+    operatorref              | SCCM
+    originref                | 0500HSTNS064
+    destinationref           | 020035576
+    originaimeddeparturetime | 2017-09-04 22:10:00+01
+
+    # select * from journies where datedvehiclejourneyref = '66' and vehiclemonitoringref = 'SCCM-54308' and lineref = 'X5' and date(originaimeddeparturetime) = '2017-09-04';
+    -[ RECORD 1 ]------------+-----------------------
+    vehiclemonitoringref     | SCCM-54308
+    lineref                  | X5
+    directionref             | INBOUND
+    dataframeref             | 1
+    datedvehiclejourneyref   | 66
+    operatorref              | SCCM
+    originref                | 0500HSTNS015
+    destinationref           | 0500CCITY476
+    originaimeddeparturetime | 2017-09-04 20:27:00+01
+    -[ RECORD 2 ]------------+-----------------------
+    vehiclemonitoringref     | SCCM-54308
+    lineref                  | X5
+    directionref             | INBOUND
+    dataframeref             | 1
+    datedvehiclejourneyref   | 66
+    operatorref              | SCCM
+    originref                | 34000000011
+    destinationref           | 040000004513
+    originaimeddeparturetime | 2017-09-04 17:30:00+01
+
+Partitioning the data by some combination of vehiclemonitoringref,
+lineref, directionref, datedvehiclejourneyref, operatorref, originref,
+destinationref, originaimeddeparturetime, and date might be expected to
+result in the paths corresponding to individual timetabled 'trips'.
+
+An exhaustive search across actual data on three weekdays 2017-04-26,
+2017-08-30 and 2017-09-04 suggests that partitioning by anything other
+than
+
+    vehiclemonitoringref, datedvehiclejourneyref, originaimeddeparturetime
+    vehiclemonitoringref, originref, originaimeddeparturetime
+    vehiclemonitoringref, destinationref, originaimeddeparturetime
+    vehiclemonitoringref, lineref, datedvehiclejourneyref, originref, date(originaimeddeparturetime)
+    vehiclemonitoringref, lineref, datedvehiclejourneyref, destinationref, date(originaimeddeparturetime)
+
+selects unrelated trips.
+
+Looking at duplicates for (originref, destinationref, originaimeddeparturetime) suggests that we are looking at seperate buses actually doing seperate journies by claiming to be on the saem one (e.g. the 2017-04-26T13:31:00+01:00 0500CCITY436 Cambridge Science Park --> 0500CCITY203 Addenbrooke's Hospital Bus Station which was simultaneously running in Cambridge and Peterborough).
+
+Alternatively some seem to represent different vehicles claiming to be doing seperate parts of the same journey (e.g one vehicle that goes from Drubber Street to an Emmanuell St bus stop aparently on a Citi7 service, and then a different vehicle that aparently completed the route)
+
+This query helps find these:
+
+  select a.* from journies as a inner join (select count(*), originref, destinationref, originaimeddeparturetime from journies group by originref, destinationref, originaimeddeparturetime having count(*) > 1) as b on a.originref=b.originref and a.destinationref=b.destinationref and a.originaimeddeparturetime = b.originaimeddeparturetime;
+
